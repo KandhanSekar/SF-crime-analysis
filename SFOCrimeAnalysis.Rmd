@@ -1,0 +1,97 @@
+SFO Crime Analysis
+========================================================
+
+This R example uses a dataset about San Franscisco crime incidents and performs analysis on the same. It is an example for various visualization techniques used.
+
+http://docs.ggplot2.org/current/
+
+ggplot2
+-------
+- Grammar of Graphics
+- Data and aesthetic mapping
+- Geometric Objects 
+- scales
+- Co-ordinates
+- Faceting
+
+
+Loading data
+------------
+
+```{r}
+crimedata <- read.csv("SFPD_Incidents.csv")
+summary(crimedata)
+
+library(ggplot2)
+```
+
+Bar Chart Example
+-----------------
+```{r}
+ggplot(aes(x=PdDistrict),data=crimedata) + 
+  geom_bar() + coord_flip()
+  
+```
+Scatter Plot Example
+--------------------
+```{r}
+ggplot(aes(x=X, y=Y), data=crimedata) +
+  geom_point(shape=1) 
+```
+
+
+Pie Chart Example
+-----------------
+Analyze Crime by category
+```{r}
+ggplot(aes(x=factor(1),fill=Category), data=crimedata) + 
+  geom_bar(width=1) + 
+  coord_polar(theta="y")
+
+```
+
+Facet Example
+-------------
+```{r message=FALSE, warning=FALSE}
+ggplot(aes(x=X), 
+       data=crimedata[crimedata$Resolution %in% 
+                        c("ARREST, BOOKED","ARREST, CITED","LOCATED"),]) +
+  geom_bar() 
+
+ggplot(aes(x=X), 
+       data=crimedata[crimedata$Resolution %in%
+                        c("ARREST, BOOKED","ARREST, CITED","LOCATED"),]) +
+  geom_bar() +
+  facet_grid(PdDistrict ~ DayOfWeek )
+
+```
+
+
+Map Example
+-----------
+Plot Crime points on a Map
+```{r}
+library(ggmap)
+
+sfmap <- qmap("San Francisco", zoom=12, legend="bottom")
+sfmap
+
+sfmap +  geom_point(aes(x=X, y=Y,color=PdDistrict), shape=1,data = crimedata) 
+
+```
+
+Find centers for setting up patrolling points
+---------------------------------------------
+```{r}
+coords <- crimedata[,c(10,11)]
+library(class)
+clusters<- kmeans(coords,5)
+
+sfmap + geom_point(aes(x=X,y=Y, color="red", size=3), data=data.frame(clusters$centers))
+
+sfmap + geom_point(aes(x=X,y=Y, color=clusters$cluster, size=3), data=crimedata) 
+
+
+```
+
+
